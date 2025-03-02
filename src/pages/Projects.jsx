@@ -188,7 +188,7 @@ const ProjectCard = memo(({ project, onOpenDialog }) => {
         </Box>
       </CardContent>
 
-      <CardActions sx={{ justifyContent: 'flex-start', px: 2, py: 1 }}> {/* Changed justifyContent */}
+      <CardActions sx={{ justifyContent: 'flex-start', px: 2, py: 1 }}>
         <Button
           size="small"
           color="primary"
@@ -210,8 +210,8 @@ const Projects = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  // For larger screens, use a larger dialog
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
   useEffect(() => {
     PROJECTS.forEach(project => {
@@ -371,18 +371,17 @@ const Projects = () => {
             open={!!dialogProject}
             onClose={() => setDialogProject(null)}
             fullWidth
-            maxWidth={isTablet ? "md" : "lg"} // Larger dialog on bigger screens
-            fullScreen={isMobile}  // Still fullscreen on mobile
+            maxWidth={isTablet ? "md" : "lg"}
+            fullScreen={isMobile}
             PaperProps={{
-               style: {
-                overflowY: "auto", // Ensure scrolling within dialog
-                display: 'flex', // Use flex for layout
-                flexDirection: 'column', // Stack content vertically
-                height: '100%', // Occupy full dialog height (important for flex)
+              style: {
+                overflowY: "auto",
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
                 maxHeight: '90vh'
               },
             }}
-
           >
             {dialogProject && (
               <>
@@ -392,10 +391,10 @@ const Projects = () => {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   borderBottom: `1px solid ${theme.palette.divider}`,
-                  position: 'sticky', // Keep header at the top
+                  position: 'sticky',
                   top: 0,
-                  backgroundColor: 'background.paper', // Match background
-                  zIndex: 1, // Ensure header is above image
+                  backgroundColor: 'background.paper',
+                  zIndex: 1,
                 }}>
                   <Box>
                     <Typography variant="h5" fontWeight="bold">
@@ -413,55 +412,115 @@ const Projects = () => {
                   </IconButton>
                 </Box>
 
-                <Box
-                    sx={{
-                    position: 'relative',
-                    width: '100%',
-                    height: 0, // Set height to 0, padding-bottom creates the aspect ratio
-                    paddingBottom: isMobile ? '56.25%' : '40%', // 16:9 aspect ratio (adjust as needed)
-                    overflow: 'hidden', // Hide any overflowing content
-                    }}
-                >
-                    <img
-                    src={dialogProject.image}
-                    alt={dialogProject.title}
-                    style={{
-                        position: 'absolute', // Position absolutely within the container
-                        top: 0,
-                        left: 0,
-                        width: '100%',   // Fill the container
-                        height: '100%',  // Fill the container
-                        objectFit: 'contain', // Maintain aspect ratio, contain within
-                        objectPosition: 'center', // Center the image
-                        backgroundColor: 'rgba(0, 0, 0, 0.05)' //Optional background color
-                    }}
-                    />
-                </Box>
-
-
-                <Box sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }}>
-                  <Typography variant="h6" gutterBottom fontWeight="bold">
-                    Project Overview
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    {dialogProject.longDescription}
-                  </Typography>
-
-                  <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>
-                    Technologies Used
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {dialogProject.technologies.map((tech, index) => (
-                      <Chip
-                        key={index}
-                        label={tech}
-                        color={TECH_COLORS[tech] || 'default'}
-                        size="small"
+                {/* Modified layout for desktop view */}
+                {!isMobile ? (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: isLargeScreen ? 'row' : 'column',
+                    p: 2,
+                    gap: 2,
+                    flex: 1
+                  }}>
+                    {/* Image container with limited height for desktop */}
+                    <Box sx={{
+                      flex: isLargeScreen ? '0 0 40%' : '0 0 auto',
+                      maxHeight: isLargeScreen ? '300px' : '250px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                      borderRadius: 1,
+                      overflow: 'hidden'
+                    }}>
+                      <img
+                        src={dialogProject.image}
+                        alt={dialogProject.title}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '100%',
+                          objectFit: 'contain',
+                          objectPosition: 'center'
+                        }}
                       />
-                    ))}
+                    </Box>
+
+                    {/* Content container */}
+                    <Box sx={{ 
+                      flex: isLargeScreen ? '0 0 60%' : '1 1 auto',
+                      overflowY: 'auto' 
+                    }}>
+                      <Typography variant="h6" gutterBottom fontWeight="bold">
+                        Project Overview
+                      </Typography>
+                      <Typography variant="body2" paragraph>
+                        {dialogProject.longDescription}
+                      </Typography>
+
+                      <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>
+                        Technologies Used
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {dialogProject.technologies.map((tech, index) => (
+                          <Chip
+                            key={index}
+                            label={tech}
+                            color={TECH_COLORS[tech] || 'default'}
+                            size="small"
+                          />
+                        ))}
+                      </Box>
+                    </Box>
                   </Box>
-                </Box>
-                {/* Removed buttons */}
+                ) : (
+                  // Mobile layout remains the same
+                  <>
+                    <Box sx={{
+                      position: 'relative',
+                      width: '100%',
+                      height: 0,
+                      paddingBottom: '56.25%',
+                      overflow: 'hidden',
+                    }}>
+                      <img
+                        src={dialogProject.image}
+                        alt={dialogProject.title}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                          objectPosition: 'center',
+                          backgroundColor: 'rgba(0, 0, 0, 0.05)'
+                        }}
+                      />
+                    </Box>
+
+                    <Box sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }}>
+                      <Typography variant="h6" gutterBottom fontWeight="bold">
+                        Project Overview
+                      </Typography>
+                      <Typography variant="body2" paragraph>
+                        {dialogProject.longDescription}
+                      </Typography>
+
+                      <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>
+                        Technologies Used
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {dialogProject.technologies.map((tech, index) => (
+                          <Chip
+                            key={index}
+                            label={tech}
+                            color={TECH_COLORS[tech] || 'default'}
+                            size="small"
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  </>
+                )}
               </>
             )}
           </Dialog>
