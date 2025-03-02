@@ -375,10 +375,9 @@ const Projects = () => {
             fullScreen={isMobile}
             PaperProps={{
               style: {
-                overflowY: "auto",
                 display: 'flex',
                 flexDirection: 'column',
-                height: '100%',
+                height: isMobile ? '100%' : 'auto', // Auto height for desktop
                 maxHeight: '90vh'
               },
             }}
@@ -419,12 +418,11 @@ const Projects = () => {
                     flexDirection: isLargeScreen ? 'row' : 'column',
                     p: 2,
                     gap: 2,
-                    flex: 1
                   }}>
                     {/* Image container with limited height for desktop */}
                     <Box sx={{
                       flex: isLargeScreen ? '0 0 40%' : '0 0 auto',
-                      maxHeight: isLargeScreen ? '300px' : '250px',
+                      height: isLargeScreen ? '250px' : '220px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -447,7 +445,6 @@ const Projects = () => {
                     {/* Content container */}
                     <Box sx={{ 
                       flex: isLargeScreen ? '0 0 60%' : '1 1 auto',
-                      overflowY: 'auto' 
                     }}>
                       <Typography variant="h6" gutterBottom fontWeight="bold">
                         Project Overview
@@ -472,13 +469,13 @@ const Projects = () => {
                     </Box>
                   </Box>
                 ) : (
-                  // Mobile layout remains the same
+                  // Mobile layout remains the same but with reduced height
                   <>
                     <Box sx={{
                       position: 'relative',
                       width: '100%',
                       height: 0,
-                      paddingBottom: '56.25%',
+                      paddingBottom: '50%', // Reduced from 56.25%
                       overflow: 'hidden',
                     }}>
                       <img
@@ -497,7 +494,7 @@ const Projects = () => {
                       />
                     </Box>
 
-                    <Box sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }}>
+                    <Box sx={{ p: 2 }}>
                       <Typography variant="h6" gutterBottom fontWeight="bold">
                         Project Overview
                       </Typography>
