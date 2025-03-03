@@ -469,32 +469,43 @@ const Projects = () => {
                     </Box>
                   </Box>
                 ) : (
-                  // Mobile layout remains the same but with reduced height
-                  <>
+                  // Modified mobile layout to eliminate empty space
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 'calc(100% - 72px)', // Subtracting header height
+                    overflow: 'auto'
+                  }}>
+                    {/* Image section with fixed height */}
                     <Box sx={{
-                      position: 'relative',
                       width: '100%',
-                      height: 0,
-                      paddingBottom: '50%', // Reduced from 56.25%
-                      overflow: 'hidden',
+                      height: '200px', // Fixed height for image container
+                      backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden'
                     }}>
                       <img
                         src={dialogProject.image}
                         alt={dialogProject.title}
                         style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
+                          maxWidth: '100%',
+                          maxHeight: '100%',
                           objectFit: 'contain',
-                          objectPosition: 'center',
-                          backgroundColor: 'rgba(0, 0, 0, 0.05)'
+                          objectPosition: 'center'
                         }}
                       />
                     </Box>
 
-                    <Box sx={{ p: 2 }}>
+                    {/* Content section that fills remaining space */}
+                    <Box sx={{ 
+                      flex: '1 1 auto', 
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'auto'
+                    }}>
                       <Typography variant="h6" gutterBottom fontWeight="bold">
                         Project Overview
                       </Typography>
@@ -505,7 +516,12 @@ const Projects = () => {
                       <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>
                         Technologies Used
                       </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        flexWrap: 'wrap', 
+                        gap: 1,
+                        mb: 2 // Added bottom margin to ensure content doesn't touch bottom edge
+                      }}>
                         {dialogProject.technologies.map((tech, index) => (
                           <Chip
                             key={index}
@@ -515,8 +531,20 @@ const Projects = () => {
                           />
                         ))}
                       </Box>
+                      
+                      {/* Additional project details to fill space */}
+                      <Box sx={{ mt: 'auto', pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+                        <Button 
+                          variant="outlined" 
+                          color="primary"
+                          fullWidth
+                          onClick={() => setDialogProject(null)}
+                        >
+                          Close
+                        </Button>
+                      </Box>
                     </Box>
-                  </>
+                  </Box>
                 )}
               </>
             )}
