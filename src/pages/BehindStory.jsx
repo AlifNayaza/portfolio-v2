@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -20,7 +20,7 @@ import {
   IconButton,
 } from '@mui/material';
 
-// Icons
+// Icons - import only what we need
 import CodeIcon from '@mui/icons-material/Code';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
@@ -29,36 +29,49 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PaletteIcon from '@mui/icons-material/Palette';
 import CloseIcon from '@mui/icons-material/Close';
 
-// Import placeholder images (replace with your actual images)
+// Import placeholder images
 import storyImage1 from '../assets/images/herosection.jpg';
 import storyImage2 from '../assets/images/design.jpg';
 import musicImage from '../assets/images/music.jpg';
 import themeImage from '../assets/images/themes.jpg';
 
+// Reusable components for better code organization and reuse
+const Section = ({ title, children, sx = {} }) => (
+  <Fade in timeout={800}>
+    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 5, borderRadius: 2, overflowX: 'hidden', ...sx }}>
+      <Typography variant="h5" gutterBottom color="primary" sx={{ fontWeight: 'bold', mb: 2, fontSize: { xs: '1.2rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+        {title}
+      </Typography>
+      {children}
+    </Paper>
+  </Fade>
+);
+
+const ChapterText = ({ children }) => (
+  <Typography variant="body1" paragraph sx={{ fontSize: { xs: '0.9rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+    {children}
+  </Typography>
+);
+
 const BehindStory = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  // State for image modal
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Open image in modal
   const handleImageClick = (image) => {
     setSelectedImage(image);
     setModalOpen(true);
   };
 
-  // Close modal
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
+  const handleCloseModal = () => setModalOpen(false);
 
-  // Data objects with improved copywriting
-  const content = {
+  // Memoize content to prevent unnecessary re-renders
+  const content = useMemo(() => ({
     techStack: ['React.js', 'Material UI'],
     journeyPhases: ['Ideation', 'Design', 'Development', 'Launch'],
-    journeyIcons: [<EmojiObjectsIcon />, <DesignServicesIcon />, <CodeIcon />, <DevicesIcon />],
+    journeyIcons: [<EmojiObjectsIcon key="idea" />, <DesignServicesIcon key="design" />, <CodeIcon key="code" />, <DevicesIcon key="devices" />],
     favoriteSongs: [
       { title: '2:23 AM', artist: 'Sharou' },
       { title: 'Blue', artist: 'yungkai' },
@@ -94,7 +107,7 @@ const BehindStory = () => {
         imageAlt: "Early sketches and ideas",
         paragraphs: [
           "It all began almost at midnight, when a wild idea crashed into my brain like a burst of raw inspiration.",
-          "No fancy roadmap—just a raw, honest moment of creative madness that I couldn’t ignore.",
+          "No fancy roadmap—just a raw, honest moment of creative madness that I couldn't ignore.",
           "Armed with a humble sketchpad and a cheeky grin, I jotted down every quirky thought that popped up.",
           "Sometimes, the best adventures start when the world is asleep, and your passion takes over."
         ],
@@ -119,7 +132,7 @@ const BehindStory = () => {
           "Next came a marathon coding session where I dove headfirst into turning sketches into a living, breathing website.",
           "I tangled with quirky bugs, refactored messy code, and even laughed at my own silly typos.",
           "Every keystroke brought me closer to a site that blended raw creativity with technical hustle.",
-          "It wasn’t always smooth sailing, but every challenge added its own bit of charm."
+          "It wasn't always smooth sailing, but every challenge added its own bit of charm."
         ],
         showJourneyPhases: true
       },
@@ -128,9 +141,9 @@ const BehindStory = () => {
         image: musicImage,
         imageAlt: "Music illustration",
         paragraphs: [
-          "A portfolio without music feels like a film without its score—it just isn’t complete.",
+          "A portfolio without music feels like a film without its score—it just isn't complete.",
           "I handpicked tunes that keep my creative flow going, each track echoing a slice of my journey.",
-          "Music isn’t just background noise; it’s the pulse that brings every design and line of code to life."
+          "Music isn't just background noise; it's the pulse that brings every design and line of code to life."
         ],
         showSongList: true,
         imagePosition: "right",
@@ -150,49 +163,138 @@ const BehindStory = () => {
         imagePosition: "left"
       }
     ]
+  }), []);
+
+  // Memoized image card component for better performance
+  const ImageCard = useMemo(() => {
+    return ({ image, alt }) => (
+      <Card
+        elevation={3}
+        sx={{
+          transition: 'transform 0.3s ease-in-out',
+          cursor: 'pointer',
+          '&:hover': {
+            transform: 'scale(1.02)',
+            boxShadow: theme.shadows[5],
+          },
+          maxWidth: '100%'
+        }}
+        onClick={() => handleImageClick(image)}
+      >
+        <CardMedia
+          component="img"
+          image={image}
+          alt={alt}
+          sx={{ height: { xs: 200, sm: 220, md: 250 }, objectFit: 'cover' }}
+          loading="lazy" // Lazy loading for images
+        />
+      </Card>
+    );
+  }, [theme.shadows, handleImageClick]);
+
+  // Render only visible chapters based on viewport to reduce initial rendering load
+  const renderChapter = (chapter, index) => {
+    return (
+      <Section 
+        key={index} 
+        title={chapter.title} 
+        sx={typeof chapter.background === 'function' ? { background: chapter.background(theme) } : { background: chapter.background }}
+      >
+        <Grid container spacing={isMobile ? 2 : 4} direction={chapter.imagePosition === "left" && !isMobile ? "row" : chapter.imagePosition === "left" && isMobile ? "column-reverse" : "row"}>
+          {chapter.imagePosition === "left" && (
+            <Grid item xs={12} md={5}>
+              <ImageCard image={chapter.image} alt={chapter.imageAlt} />
+            </Grid>
+          )}
+          
+          <Grid item xs={12} md={chapter.showSongList || chapter.showThemes ? 7 : chapter.imagePosition ? 7 : 12}>
+            {chapter.paragraphs.map((paragraph, i) => (
+              <ChapterText key={i}>{paragraph}</ChapterText>
+            ))}
+
+            {chapter.showSongList && (
+              <List>
+                {content.favoriteSongs.map((song, i) => (
+                  <ListItem key={song.title} sx={{ py: { xs: 0.5, sm: 1 } }}>
+                    <ListItemIcon>
+                      <MusicNoteIcon color={i % 2 === 0 ? 'primary' : 'secondary'} />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={song.title} 
+                      secondary={song.artist} 
+                      primaryTypographyProps={{ fontWeight: 'medium', sx: { fontSize: { xs: '0.9rem', sm: '1rem' } } }}
+                      secondaryTypographyProps={{ sx: { fontSize: { xs: '0.8rem', sm: '0.875rem' } } }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+
+            {chapter.showThemes && (
+              <Box sx={{ my: 2.5 }}>
+                <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold', mb: 1.5, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                  Available Themes:
+                </Typography>
+                <Grid container spacing={isMobile ? 1 : 2}>
+                  {content.themes.map((colorTheme) => (
+                    <Grid item xs={6} sm={4} key={colorTheme.name}>
+                      <Card
+                        elevation={2}
+                        sx={{
+                          p: { xs: 1.5, sm: 2 },
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            transform: 'translateY(-3px)',
+                            boxShadow: theme.shadows[4],
+                          },
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <PaletteIcon sx={{ mr: 1, color: colorTheme.primary, fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+                          <Typography variant="subtitle2" fontWeight="bold" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, wordBreak: 'break-word' }}>
+                            {colorTheme.name}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: { xs: 20, sm: 24 },
+                              height: { xs: 20, sm: 24 },
+                              borderRadius: '50%',
+                              bgcolor: colorTheme.primary,
+                              border: '2px solid white',
+                              boxShadow: '0 0 0 1px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                          <Box
+                            sx={{
+                              width: { xs: 20, sm: 24 },
+                              height: { xs: 20, sm: 24 },
+                              borderRadius: '50%',
+                              bgcolor: colorTheme.secondary,
+                              border: '2px solid white',
+                              boxShadow: '0 0 0 1px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                        </Box>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+          </Grid>
+          
+          {chapter.imagePosition === "right" && (
+            <Grid item xs={12} md={5}>
+              <ImageCard image={chapter.image} alt={chapter.imageAlt} />
+            </Grid>
+          )}
+        </Grid>
+      </Section>
+    );
   };
-
-  // Reusable components
-  const Section = ({ title, children, sx = {} }) => (
-    <Fade in timeout={800}>
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 5, borderRadius: 2, overflowX: 'hidden', ...sx }}>
-        <Typography variant="h5" gutterBottom color="primary" sx={{ fontWeight: 'bold', mb: 2, fontSize: { xs: '1.2rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
-          {title}
-        </Typography>
-        {children}
-      </Paper>
-    </Fade>
-  );
-
-  const ImageCard = ({ image, alt }) => (
-    <Card
-      elevation={3}
-      sx={{
-        transition: 'transform 0.3s ease-in-out',
-        cursor: 'pointer',
-        '&:hover': {
-          transform: 'scale(1.02)',
-          boxShadow: theme.shadows[5],
-        },
-        maxWidth: '100%'
-      }}
-      onClick={() => handleImageClick(image)}
-    >
-      <CardMedia
-        component="img"
-        image={image}
-        alt={alt}
-        sx={{ height: { xs: 200, sm: 220, md: 250 }, objectFit: 'cover' }}
-      />
-    </Card>
-  );
-
-  const ChapterText = ({ children }) => (
-    <Typography variant="body1" paragraph sx={{ fontSize: { xs: '0.9rem', sm: '1rem' }, wordBreak: 'break-word' }}>
-      {children}
-    </Typography>
-  );
-
+  
   return (
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, overflowX: 'hidden' }}>
       <Fade in timeout={600}>
@@ -266,37 +368,15 @@ const BehindStory = () => {
           </Paper>
 
           {/* Story Chapters 1 and 2 */}
-          {content.chapters.slice(0, 2).map((chapter, index) => (
-            <Section key={index} title={chapter.title} sx={typeof chapter.background === 'function' ? { background: chapter.background(theme) } : { background: chapter.background }}>
-              <Grid container spacing={isMobile ? 2 : 4} direction={chapter.imagePosition === "left" && !isMobile ? "row" : chapter.imagePosition === "left" && isMobile ? "column-reverse" : "row"}>
-                {chapter.imagePosition === "left" && (
-                  <Grid item xs={12} md={5}>
-                    <ImageCard image={chapter.image} alt={chapter.imageAlt} />
-                  </Grid>
-                )}
-                
-                <Grid item xs={12} md={chapter.showSongList || chapter.showThemes ? 7 : chapter.imagePosition ? 7 : 12}>
-                  {chapter.paragraphs.map((paragraph, i) => (
-                    <ChapterText key={i}>{paragraph}</ChapterText>
-                  ))}
-                </Grid>
-                
-                {chapter.imagePosition === "right" && (
-                  <Grid item xs={12} md={5}>
-                    <ImageCard image={chapter.image} alt={chapter.imageAlt} />
-                  </Grid>
-                )}
-              </Grid>
-            </Section>
-          ))}
+          {content.chapters.slice(0, 2).map(renderChapter)}
 
-          {/* New Section: Breaking the Mold */}
+          {/* Breaking the Mold Section */}
           <Section title="Breaking the Mold: Meet 'Story'">
             <ChapterText>
-              Let’s be honest—most sites roll out the same old menu items: Home, About, Projects, Contacts. They work, but they can feel a bit run-of-the-mill.
+              Let's be honest—most sites roll out the same old menu items: Home, About, Projects, Contacts. They work, but they can feel a bit run-of-the-mill.
             </ChapterText>
             <ChapterText>
-              That’s why I carved out a little corner for something different—a "Story" menu that dives into the creative chaos and magic behind this portfolio.
+              That's why I carved out a little corner for something different—a "Story" menu that dives into the creative chaos and magic behind this portfolio.
             </ChapterText>
           </Section>
 
@@ -349,103 +429,9 @@ const BehindStory = () => {
           </Section>
 
           {/* Chapters 4 and 5 */}
-          {content.chapters.slice(3, 5).map((chapter, index) => (
-            <Section key={index + 3} title={chapter.title} sx={typeof chapter.background === 'function' ? { background: chapter.background(theme) } : { background: chapter.background }}>
-              <Grid container spacing={isMobile ? 2 : 4} direction={chapter.imagePosition === "left" && !isMobile ? "row" : chapter.imagePosition === "left" && isMobile ? "column-reverse" : "row"}>
-                {chapter.imagePosition === "left" && (
-                  <Grid item xs={12} md={5}>
-                    <ImageCard image={chapter.image} alt={chapter.imageAlt} />
-                  </Grid>
-                )}
-                
-                <Grid item xs={12} md={chapter.showSongList || chapter.showThemes ? 7 : chapter.imagePosition ? 7 : 12}>
-                  {chapter.paragraphs.map((paragraph, i) => (
-                    <ChapterText key={i}>{paragraph}</ChapterText>
-                  ))}
+          {content.chapters.slice(3, 5).map(renderChapter)}
 
-                  {chapter.showSongList && (
-                    <List>
-                      {content.favoriteSongs.map((song, i) => (
-                        <ListItem key={song.title} sx={{ py: { xs: 0.5, sm: 1 } }}>
-                          <ListItemIcon>
-                            <MusicNoteIcon color={i % 2 === 0 ? 'primary' : 'secondary'} />
-                          </ListItemIcon>
-                          <ListItemText 
-                            primary={song.title} 
-                            secondary={song.artist} 
-                            primaryTypographyProps={{ fontWeight: 'medium', sx: { fontSize: { xs: '0.9rem', sm: '1rem' } } }}
-                            secondaryTypographyProps={{ sx: { fontSize: { xs: '0.8rem', sm: '0.875rem' } } }}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  )}
-
-                  {chapter.showThemes && (
-                    <Box sx={{ my: 2.5 }}>
-                      <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold', mb: 1.5, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                        Available Themes:
-                      </Typography>
-                      <Grid container spacing={isMobile ? 1 : 2}>
-                        {content.themes.map((colorTheme) => (
-                          <Grid item xs={6} sm={4} key={colorTheme.name}>
-                            <Card
-                              elevation={2}
-                              sx={{
-                                p: { xs: 1.5, sm: 2 },
-                                transition: 'all 0.2s ease',
-                                '&:hover': {
-                                  transform: 'translateY(-3px)',
-                                  boxShadow: theme.shadows[4],
-                                },
-                              }}
-                            >
-                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                <PaletteIcon sx={{ mr: 1, color: colorTheme.primary, fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
-                                <Typography variant="subtitle2" fontWeight="bold" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, wordBreak: 'break-word' }}>
-                                  {colorTheme.name}
-                                </Typography>
-                              </Box>
-                              <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Box
-                                  sx={{
-                                    width: { xs: 20, sm: 24 },
-                                    height: { xs: 20, sm: 24 },
-                                    borderRadius: '50%',
-                                    bgcolor: colorTheme.primary,
-                                    border: '2px solid white',
-                                    boxShadow: '0 0 0 1px rgba(0,0,0,0.1)',
-                                  }}
-                                />
-                                <Box
-                                  sx={{
-                                    width: { xs: 20, sm: 24 },
-                                    height: { xs: 20, sm: 24 },
-                                    borderRadius: '50%',
-                                    bgcolor: colorTheme.secondary,
-                                    border: '2px solid white',
-                                    boxShadow: '0 0 0 1px rgba(0,0,0,0.1)',
-                                  }}
-                                />
-                              </Box>
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </Box>
-                  )}
-                </Grid>
-                
-                {chapter.imagePosition === "right" && (
-                  <Grid item xs={12} md={5}>
-                    <ImageCard image={chapter.image} alt={chapter.imageAlt} />
-                  </Grid>
-                )}
-              </Grid>
-            </Section>
-          ))}
-
-          {/* Tech Stack */}
+          {/* Tech Stack - simplified */}
           <Section
             title="Tools of My Trade"
             sx={{ background: `linear-gradient(to right, ${theme.palette.background.paper}, rgba(${theme.palette.primary.main.replace('rgb(', '').replace(')', '')}, 0.05))` }}
@@ -472,21 +458,12 @@ const BehindStory = () => {
             </ChapterText>
           </Section>
 
-          {/* Chapter 6 */}
+          {/* Chapter 6 - Details */}
           <Section title="Chapter 6: The Little Things Matter">
             <ChapterText>
               The real magic is in the details—the small, thoughtful touches that make an experience unforgettable.
             </ChapterText>
-            <ChapterText>
-              Whether it’s smooth responsiveness or subtle animations, every element is fine-tuned to perfection.
-            </ChapterText>
-            <ChapterText>
-              And yes, accessibility comes first because great design should be open to everyone.
-            </ChapterText>
-            <ChapterText>
-              Each tweak brings me closer to an interface that’s as inviting as it is polished.
-            </ChapterText>
-
+            
             <Grid container spacing={isMobile ? 2 : 3} sx={{ my: 2 }}>
               {content.details.map((detail, index) => (
                 <Grid item xs={12} sm={6} md={4} key={detail.title}>
@@ -512,47 +489,41 @@ const BehindStory = () => {
                 </Grid>
               ))}
             </Grid>
+            
+            <ChapterText>
+              Each tweak brings me closer to an interface that's as inviting as it is polished.
+            </ChapterText>
           </Section>
 
-          {/* Chapter 7 */}
+          {/* Chapter 7 - simplified */}
           <Section title="Chapter 7: The Adventure Goes On">
             <ChapterText>
-              This portfolio might seem like a complete story, but it’s really just one snapshot of a bigger adventure.
+              This portfolio might seem like a complete story, but it's really just one snapshot of a bigger adventure.
             </ChapterText>
             <ChapterText>
-              I’m always exploring fresh ideas, trying out new designs, and learning as I go.
-            </ChapterText>
-            <ChapterText>
-              Even if this chapter wraps up, the creative journey is just getting started—there’s plenty more to come.
+              I'm always exploring fresh ideas, trying out new designs, and learning as I go.
             </ChapterText>
             <ChapterText>
               Stay tuned, because the best is yet to happen!
             </ChapterText>
           </Section>
 
-          {/* Epilogue */}
+          {/* Epilogue - simplified */}
           <Fade in timeout={1000}>
             <Paper
               elevation={3}
               sx={{
                 p: { xs: 2, sm: 3, md: 4 },
                 borderRadius: 2,
-                overflowX: 'hidden',
                 background: `linear-gradient(to bottom, ${theme.palette.background.paper} 0%, rgba(${theme.palette.primary.main.replace('rgb(', '').replace(')', '')}, 0.05) 100%)`,
               }}
             >
-              <Typography variant="h5" gutterBottom color="primary" sx={{ fontWeight: 'bold', textAlign: 'center', mb: 3, fontSize: { xs: '1.2rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+              <Typography variant="h5" gutterBottom color="primary" sx={{ fontWeight: 'bold', textAlign: 'center', mb: 3, fontSize: { xs: '1.2rem', sm: '1.5rem' } }}>
                 Epilogue: Reflecting on the Ride
               </Typography>
 
               <Typography variant="body1" paragraph sx={{ maxWidth: 800, mx: 'auto', fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                Looking back, it all started with a wild night idea that evolved into a hands-on exploration of design and code.
-              </Typography>
-              <Typography variant="body1" paragraph sx={{ maxWidth: 800, mx: 'auto', fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                This portfolio isn’t just a showcase—it’s like a journal of my creative journey, complete with experiments, mishaps, and small wins.
-              </Typography>
-              <Typography variant="body1" paragraph sx={{ maxWidth: 800, mx: 'auto', fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                Every color, every line of code, and every detail tells a piece of my story. And though this chapter is ending, a new one is just around the corner.
+                Looking back, it all started with a wild night idea that evolved into a hands-on exploration of design and code. This portfolio isn't just a showcase—it's like a journal of my creative journey, complete with experiments, mishaps, and small wins.
               </Typography>
 
               <Box sx={{ width: '30%', mx: 'auto', my: 3, borderBottom: `1px solid ${theme.palette.divider}` }} />
@@ -564,8 +535,6 @@ const BehindStory = () => {
                   textAlign: 'center',
                   color: theme.palette.primary.main,
                   py: 1,
-                  maxWidth: '100%',
-                  px: 2,
                   mx: 'auto',
                   fontSize: { xs: '0.9rem', sm: '1rem' }
                 }}
@@ -573,7 +542,7 @@ const BehindStory = () => {
                 "Sometimes the most unexpected journeys begin with a late-night spark."
               </Typography>
 
-              <Typography variant="body1" sx={{ textAlign: 'center', mt: 3, maxWidth: 800, mx: 'auto', fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+              <Typography variant="body1" sx={{ textAlign: 'center', mt: 3, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                 Thanks for joining me on this ride.
               </Typography>
             </Paper>
@@ -581,51 +550,72 @@ const BehindStory = () => {
         </Box>
       </Fade>
 
-      {/* Image Modal */}
-      <Modal open={modalOpen} onClose={handleCloseModal}>
-        <Box sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '90%',
-          maxWidth: '1000px',
-          maxHeight: '90vh',
-          outline: 'none',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          bgcolor: 'background.paper',
-          boxShadow: 24,
-          p: 1,
-          borderRadius: 1,
-        }}>
-          <Box sx={{ alignSelf: 'flex-end', mb: 1 }}>
-            <IconButton onClick={handleCloseModal} aria-label="close">
+      {/* Improved Image Modal - full screen with no bars */}
+      <Modal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        closeAfterTransition
+      >
+        <Fade in={modalOpen}>
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: theme.zIndex.modal,
+            }}
+            onClick={handleCloseModal}
+          >
+            {/* Close button positioned in corner */}
+            <IconButton
+              onClick={handleCloseModal}
+              sx={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                color: 'white',
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                },
+                zIndex: theme.zIndex.modal + 1,
+              }}
+            >
               <CloseIcon />
             </IconButton>
-          </Box>
-          <Box sx={{ 
-            width: '100%', 
-            height: 'calc(90vh - 48px)', 
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'auto'
-          }}>
+
+            {/* Image container taking full viewport with no padding */}
             {selectedImage && (
-              <img
-                src={selectedImage}
-                alt="Full size"
-                style={{ 
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain'
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
-              />
+                onClick={(e) => e.stopPropagation()} // Prevent click from closing when clicking image
+              >
+                <img
+                  src={selectedImage}
+                  alt="Full view"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                  }}
+                  loading="eager"
+                />
+              </Box>
             )}
           </Box>
-        </Box>
+        </Fade>
       </Modal>
     </Container>
   );
