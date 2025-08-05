@@ -40,7 +40,7 @@ const SOCIAL_LINKS = [
   { 
     icon: InstagramIcon, 
     label: 'Instagram', 
-    href: 'https://www.instagram.com/alraf/',
+    href: 'https://www.instagram.com/ohalraf/',
     color: '#E1306C'
   }
 ];

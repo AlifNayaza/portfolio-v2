@@ -41,7 +41,7 @@ const Contacts = () => {
     { icon: <EmailIcon />, text: 'alifnayaza2693@gmail.com', link: 'mailto:alifnayaza2693@gmail.com', color: theme.palette.primary.main },
     { icon: <LinkedInIcon />, text: 'Alif Haikal Nayaza', link: 'https://www.linkedin.com/in/alif-haikal-nayaza-a5b587241/', color: '#0077B5' },
     { icon: <GitHubIcon />, text: 'AlifNayaza', link: 'https://github.com/AlifNayaza', color: '#333333' },
-    { icon: <InstagramIcon />, text: '@alraf', link: 'https://www.instagram.com/alraf26_/', color: '#E1306C' }
+    { icon: <InstagramIcon />, text: '@ohalraf', link: 'https://www.instagram.com/alraf26_/', color: '#E1306C' }
   ], [theme.palette.primary.main]);
 
   // Form handlers - Simplified to ensure basic functionality works
